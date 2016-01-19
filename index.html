@@ -8,6 +8,143 @@
     <link rel="stylesheet" type="text/css" href="./static/css/index.min.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 	<script type="text/javascript" src="./static/js/jquery.min.js"></script>
+    <style type="text/css">
+body{margin:0; font-family:微软雅黑;}
+#flow-box{position:relative}
+#flow-box li{
+width:30%; position:absolute; padding:10px; border:solid 1px #efefef; list-style:none;
+opacity:0;
+-moz-opacity:0;
+filter:alpha(opacity=0);
+-webkit-transition:opacity 500ms ease-in-out;
+-moz-transition:opacity 500ms ease-in-out;
+-o-transition:opaicty 500ms ease-in-out;
+transition:opaicty 500ms ease-in-out;}
+#flow-box li img{width:100%;}
+#flow-box li a{display:block; width:100%; text-align:center; font-size:14px; color:#333; line-height:18px; margin-top:10px; text-decoration:none;}
+</style>
+<script type="text/javascript">
+function flow(mh, mv) {//参数mh和mv是定义数据块之间的间距，mh是水平距离，mv是垂直距离
+var w = document.documentElement.offsetWidth;//计算页面宽度
+var ul = document.getElementById("flow-box");
+var li = ul.getElementsByTagName("li");
+var iw = li[0].offsetWidth + mh;//计算数据块的宽度
+var c = Math.floor(w / iw);//计算列数
+ul.style.width = iw * c - mh + "px";//设置ul的宽度至适合便可以利用css定义的margin把所有内容居中 
+
+var liLen = li.length;
+var lenArr = [];
+for (var i = 0; i < liLen; i++) {//遍历每一个数据块将高度记入数组
+lenArr.push(li[i].offsetHeight);
+} 
+
+var oArr = [];
+for (var i = 0; i < c; i++) {//把第一行排放好，并将每一列的高度记入数据oArr
+li[i].style.top = "0";
+li[i].style.left = iw * i + "px";
+li[i].style.opacity = "1";
+li[i].style["-moz-opacity"] = "1";
+li[i].style["filter"] = "alpha(opacity=100)";
+oArr.push(lenArr[i]);
+} 
+
+for (var i = c; i < liLen; i++) {//将其他数据块定位到最短的一列后面，然后再更新该列的高度
+var x = _getMinKey(oArr);//获取最短的一列的索引值
+li[i].style.top = oArr[x] + mv + "px";
+li[i].style.left = iw * x + "px";
+li[i].style.opacity = "1";
+li[i].style["-moz-opacity"] = "1";
+li[i].style["filter"] = "alpha(opacity=100)";
+oArr[x] = lenArr[i] + oArr[x] + mv;//更新该列的高度
+}
+document.getElementById("loadimg").style.top = _getMaxValue(oArr) + 50 + "px";//将loading移到下面 
+
+function scroll() {//滚动加载数据
+var st = oArr[_getMinKey(oArr)];
+var scrollTop = document.documentElement.scrollTop > document.body.scrollTop? document.documentElement.scrollTop : document.body.scrollTop;
+if (scrollTop >= st - document.documentElement.clientHeight) {
+window.onscroll = null;//为防止重复执行，先清除事件
+}
+}
+window.onscroll =scroll;
+}
+//图片加载完成后执行
+window.onload = function() {flow(10, 10)};
+//改变窗口大小时重新布局
+var re;
+window.onresize = function() {
+clearTimeout(re);
+re = setTimeout(function() {flow(10, 10);}, 200);
+}
+//追加项
+function _addItem(arr, callback) {
+var _html = "";
+var a = 0;
+var l = arr.length;
+(function loadimg() {
+var img = new Image();
+img.onload = function() {
+a += 1;
+if (a == l) {
+for (var k in arr) {
+var img = new Image();
+img.src = arr[k].img;
+_html += '<li><img src="' + arr[k].img + '" /><a href="#">' + arr[k].title + '</a></li>';
+}
+_appendhtml(document.getElementById("flow-box"), _html);
+callback();
+}
+else {
+loadimg();
+}
+}
+img.src = arr[a].img;
+})()
+}
+
+//追加html
+function _appendhtml(parent, child) {
+if (typeof (child) == "string") {
+var div = document.createElement("div");
+div.innerHTML = child;
+var frag = document.createDocumentFragment();
+(function() {
+if (div.firstChild) {
+frag.appendChild(div.firstChild);
+arguments.callee();
+}
+else {
+parent.appendChild(frag);
+}
+})();
+}
+else {
+parent.appendChild(child);
+}
+}
+//获取数字数组的最大值
+function _getMaxValue(arr) {
+var a = arr[0];
+for (var k in arr) {
+if (arr[k] > a) {
+a = arr[k];
+}
+}
+return a;
+}
+//获取数字数组最小值的索引
+function _getMinKey(arr) {
+var a = arr[0];
+var b = 0;
+for (var k in arr) {
+if (arr[k] < a) {
+a = arr[k];
+b = k;
+}
+}
+return b;
+}
+</script>
 </head>
 <body>
 	<header id="header-section" class="ha-header ut-header-light ha-header-small" style="display:none;">
@@ -110,106 +247,106 @@
 
 
 							                   <div style="width:80%;margin:0 10%;text-align:center;"> <embed src="http://player.youku.com/player.php/sid/XNDUwOTAxMjgw/v.swf" allowFullScreen="true" quality="high" width="480" height="400" align="middle" allowScriptAccess="always" type="application/x-shockwave-flash"></embed>  </div>
+
                             <div class="grid-container section-content" style="opacity: 1;margin-top: 70px;">
-
                                 <div class="grid-100 mobile-grid-100 tablet-grid-100">
+                                    <ul id="flow-box"> 
+                                    <li> 
+                                        <div class="ut-one-half">
+                                            <div class="ut-service-column">
+                                                <h3><i class="fa fa-calculator fa-2x"></i> 计算机部</h3>
+                                                <hr class="sub-title"/>
+                                                <p> 计算机部是校科协的传统部门，主要负责开展计算机软件方面的竞赛、技术培训以及项目和科研工作，目前主要有以下几个研究方向：Windows编程，acm算法，linux系统，游戏开发。同时拥有若干个项目组和专业研究小组。只要你是对有关于计算机各方面感兴趣的，无论你技术高低，都可以来加入，在这里，你总能找到一群有着相同兴趣爱好的人，他们就是你的良师益友。欢迎对计算机软件与网络等方向感兴趣的各位新生加入。</p>
+                                            </div>
+                                        </div>
+                                    </li>
 
+                                    <li> 
+                                        <div class="ut-one-half">
+                                            <div class="ut-service-column">
+                                                <h3><i class="fa fa-usb fa-2x"></i> 电子部</h3>
+                                                <hr class="sub-title"/>
+                                                <p> 电子部由爱好硬件制作与应用的学生组成。主要职能是帮助广大学生熟悉单片机基本操作与原理并加以应用，提高学生对硬件的认识程度。主要研究电子电路，片上系统，数字电路，模拟电路等等相关的知识和技术。电子部日常培训采用平行组的形式，对部员统一进行电路焊接、程序设计等培训。成员通过平时的动手实践，更加地了解了自身的爱好，更好地发展了自身的兴趣。同时，电子部会定期布置一些有关硬件设计与制作的任务，促进学术氛围的形成。除此之外，电子部会为物理竞赛，大学生电子设计大赛等竞赛提供培训和硬件支持。电子部历届成员多次在全国大学生电子设计大赛等竞赛中获得一、二、三等奖的好成绩。欢迎各位有志于从事电子技术方面研究的青年加入。</p>
+                                            </div>
+                                        </div>
+                                    </li>
 
-                                <div class="ut-one-half   "><div class="ut-service-column">
+                                    <li> 
+                                        <div class="ut-one-half">
+                                            <div class="ut-service-column">
+                                                <h3><i class="fa fa-internet-explorer fa-2x"></i> 网络部</h3>
+                                                <hr class="sub-title"/>
+                                                <p> 网络部是一个热衷于web前后端开发、网络安全和多媒体制作的技术部门。我们不仅喜欢热门的web前端技术，我们还研究数据库 服务器 http协议 web脚本语言(python php ruby and Node.js)等方面的知识使用。我们喜欢渗透、逆向的快感，我们还做的了视频拍的了绚丽的mv。我们希望和志同道合的人在一起做喜欢的事情，期待你们的加入！</p>
+                                            </div>
+                                        </div>
+                                    </li>
 
-                                    	<h3><i class="fa fa-calculator fa-2x"></i> 计算机部</h3>
-                                        <hr class="sub-title"/>
-                                    	<p> 计算机部是校科协的传统部门，主要负责开展计算机软件方面的竞赛、技术培训以及项目和科研工作，目前主要有以下几个研究方向：Windows编程，acm算法，linux系统，游戏开发。同时拥有若干个项目组和专业研究小组。只要你是对有关于计算机各方面感兴趣的，无论你技术高低，都可以来加入，在这里，你总能找到一群有着相同兴趣爱好的人，他们就是你的良师益友。欢迎对计算机软件与网络等方向感兴趣的各位新生加入。</p>
-                                    </div>
-                                </div>
+                                    <li> 
+                                        <div class="ut-one-half">
+                                            <div class="ut-service-column">
+                                                <h3><i class="fa fa-file-text fa-2x"></i> 办公室</h3>
+                                                <hr class="sub-title"/>
+                                                <p> 办公室作为主席团和校科协各个部门的沟通纽带，是校科协运作的保障部门，与其他部门都有着紧密的联系。办公室的工作主要包括 ：人员的组织与调配 、 活动的策划与总结 、 成员档案的归类与整理 、 文案的编辑与制作以及账务管理等 。在这里，你可以是掌握全局的策划者，可以是光彩照人的主持人，可以是默默辛勤的场务人员。在这里，你的沟通交流、活动组织策划能力可以得到提高。校科协办公室欢迎你的加入。</p>
+                                            </div>
+                                        </div>
+                                    </li>
 
-                                   <div class="ut-one-half   "><div class="ut-service-column">
-                                        <h3><i class="fa fa-usb fa-2x"></i> 电子部</h3>
-                                        <hr class="sub-title"/>
-                                    	<p> 电子部由爱好硬件制作与应用的学生组成。主要职能是帮助广大学生熟悉单片机基本操作与原理并加以应用，提高学生对硬件的认识程度。主要研究电子电路，片上系统，数字电路，模拟电路等等相关的知识和技术。电子部日常培训采用平行组的形式，对部员统一进行电路焊接、程序设计等培训。成员通过平时的动手实践，更加地了解了自身的爱好，更好地发展了自身的兴趣。同时，电子部会定期布置一些有关硬件设计与制作的任务，促进学术氛围的形成。除此之外，电子部会为物理竞赛，大学生电子设计大赛等竞赛提供培训和硬件支持。电子部历届成员多次在全国大学生电子设计大赛等竞赛中获得一、二、三等奖的好成绩。欢迎各位有志于从事电子技术方面研究的青年加入。</p>
-                                    </div>
+                                    <li> 
+                                        <div class="ut-one-half">
+                                            <div class="ut-service-column">
+                                                <h3><i class="fa fa-eye fa-2x"></i> 外联部</h3>
+                                                <hr class="sub-title"/>
+                                                <p> 外联部，主要负责科协和外界的联系与日常活动的组织开展。其中包括校科协与企业之间的联系，科协与兄弟院校之间的联系，并经常举办讲座会谈等活动来增进相互之间的了解。这是一个极具挑战性的部门，在外联人的努力下我们已经与联想、华为、惠普、华硕、阿里巴巴等公司进行合作，不仅能提升大家的口才、沟通、组织能力，更重要的是它能开阔大家的眼界，磨练大家的意志，积累自己的人脉。外联部，欢迎你的加入！</p>
+                                            </div>
+                                        </div>
+                                    </li>
 
-                                </div>
+                                    <li> 
+                                        <div class="ut-one-half">
+                                            <div class="ut-service-column">
+                                                <h3><i class="fa fa-picture-o fa-2x"></i> 科宣部</h3>
+                                                <hr class="sub-title"/>
+                                                <p> 科宣部全称科普宣传部，活跃在校科协各种宣传活动的第一线。用手绘展示科技风采，用网络传播科技文化，用视频呈现科技魅力，将科技与文艺紧密结合，把创新思想融入科技推广。通过形式丰富的活动在校内外进行科学普及，丰富同学们的课余生活，并扩大校科协在校内的影响力。</br>科宣部管理着校科协的各网络门户，如人人科协主页、新浪微博等，在网络平台上向全校同学发布科协的动态，宣传科普知识。科宣部的工作需要具备使用PS等图像制作软件的应用能力，对于没有基础的同学，我们会组织专门的课程进行培训。</p>
+                                            </div>
+                                        </div>
+                                    </li>
 
+                                    <li> 
+                                        <div class="ut-one-half">
+                                            <div class="ut-service-column">
+                                                <h3><i class="fa fa-connectdevelop fa-2x"></i> 社团发展部</h3>
+                                                <hr class="sub-title"/>
+                                                <p> 社团发展部主要负责科协与各直属社团之间的日常联系与发展，使直属社团与科协联系紧密，更好的发展。同时也负责科协中的创新创业版块，负责学校的创新创业工作及创新项目与产业孵化，积极动员同学们和各参赛队的创新创业工作。同时处理创新创业中心的日常工作。</p>
+                                            </div>
+                                        </div>
+                                    </li>
 
+                                    <li> 
+                                        <div class="ut-one-half">
+                                            <div class="ut-service-column">
+                                                <h3><i class="fa fa-twitter fa-2x"></i> SAST工作室</h3>
+                                                <hr class="sub-title"/>
+                                                <p> SAST工作室，面向于在学生科技创新的相关领域有较突出成就的同学。加入 SAST 工作室需提供相关成就的证明后由相关部门审议通过 。 该机构为成员们提供良好的研究与交流环境 ， 并提供相关身份证明 。能够加入 SAST 工作室也是我校从事科技创新工作的学生的一种荣誉象征。</p>
+                                            </div>
+                                        </div>
+                                    </li>
 
-
-
-
-                                   <div class="ut-one-half   "><div class="ut-service-column">
-                                        <h3><i class="fa fa-internet-explorer fa-2x"></i> 网络部</h3>
-                                        <hr class="sub-title"/>
-                                    	<p> 网络部是一个热衷于web前后端开发、网络安全和多媒体制作的技术部门。我们不仅喜欢热门的web前端技术，我们还研究数据库 服务器 http协议 web脚本语言(python php ruby and Node.js)等方面的知识使用。我们喜欢渗透、逆向的快感，我们还做的了视频拍的了绚丽的mv。我们希望和志同道合的人在一起做喜欢的事情，期待你们的加入！</p>
-                                    </div>
-                                </div>
-
-
-
-                                   <div class="ut-one-half   "><div class="ut-service-column">
-                                        <h3><i class="fa fa-file-text fa-2x"></i> 办公室</h3>
-                                        <hr class="sub-title"/>
-                                    	<p> 办公室作为主席团和校科协各个部门的沟通纽带，是校科协运作的保障部门，与其他部门都有着紧密的联系。办公室的工作主要包括 ：人员的组织与调配 、 活动的策划与总结 、 成员档案的归类与整理 、 文案的编辑与制作以及账务管理等 。在这里，你可以是掌握全局的策划者，可以是光彩照人的主持人，可以是默默辛勤的场务人员。在这里，你的沟通交流、活动组织策划能力可以得到提高。校科协办公室欢迎你的加入。</p>
-                                    </div>
-                                </div>
-
-
-
-                                   <div class="ut-one-half   "><div class="ut-service-column">
-                                        <h3><i class="fa fa-eye fa-2x"></i> 外联部</h3>
-                                        <hr class="sub-title"/>
-                                    	<p> 外联部，主要负责科协和外界的联系与日常活动的组织开展。其中包括校科协与企业之间的联系，科协与兄弟院校之间的联系，并经常举办讲座会谈等活动来增进相互之间的了解。这是一个极具挑战性的部门，在外联人的努力下我们已经与联想、华为、惠普、华硕、阿里巴巴等公司进行合作，不仅能提升大家的口才、沟通、组织能力，更重要的是它能开阔大家的眼界，磨练大家的意志，积累自己的人脉。外联部，欢迎你的加入！</p>
-                                    </div>
-                                </div>
-
-
-
-                                   <div class="ut-one-half   "><div class="ut-service-column">
-                                        <h3><i class="fa fa-picture-o fa-2x"></i> 科宣部</h3>
-                                        <hr class="sub-title"/>
-                                    	<p> 科宣部全称科普宣传部，活跃在校科协各种宣传活动的第一线。用手绘展示科技风采，用网络传播科技文化，用视频呈现科技魅力，将科技与文艺紧密结合，把创新思想融入科技推广。通过形式丰富的活动在校内外进行科学普及，丰富同学们的课余生活，并扩大校科协在校内的影响力。</br>科宣部管理着校科协的各网络门户，如人人科协主页、新浪微博等，在网络平台上向全校同学发布科协的动态，宣传科普知识。科宣部的工作需要具备使用PS等图像制作软件的应用能力，对于没有基础的同学，我们会组织专门的课程进行培训。</p>
-                                    </div>
-                                </div>
-
-
-
-                                   <div class="ut-one-half   "><div class="ut-service-column">
-                                        <h3><i class="fa fa-connectdevelop fa-2x"></i> 社团发展部</h3>
-                                        <hr class="sub-title"/>
-                                    	<p> 社团发展部主要负责科协与各直属社团之间的日常联系与发展，使直属社团与科协联系紧密，更好的发展。同时也负责科协中的创新创业版块，负责学校的创新创业工作及创新项目与产业孵化，积极动员同学们和各参赛队的创新创业工作。同时处理创新创业中心的日常工作。</p>
-                                    </div>
-                                </div>
-
-
-
-
-                                   <div class="ut-one-half   "><div class="ut-service-column">
-                                        <h3><i class="fa fa-twitter fa-2x"></i> SAST工作室</h3>
-                                        <hr class="sub-title"/>
-                                    	<p> SAST工作室，面向于在学生科技创新的相关领域有较突出成就的同学。加入 SAST 工作室需提供相关成就的证明后由相关部门审议通过 。 该机构为成员们提供良好的研究与交流环境 ， 并提供相关身份证明 。能够加入 SAST 工作室也是我校从事科技创新工作的学生的一种荣誉象征。</p>
-                                    </div>
-                                </div>
-
-
-                                   <div class="ut-one-half   "><div class="ut-service-column">
-                                        <h3><i class="fa fa-university fa-2x"></i> 科技学术类直属社团</h3>
-                                    	<hr class="sub-title"/>
-                                        <p> 校科协创新中心还有CG爱好者协会、ERP协会、安全技术协会、创业协会、漫漫邮子路、苹果爱好者俱乐部、嵌入式协会、华为花粉俱乐部、华夜工作室九个直属社团</p>
-                                    </div>
+                                    <li> 
+                                        <div class="ut-one-half   ">
+                                            <div class="ut-service-column">
+                                                <h3><i class="fa fa-university fa-2x"></i> 科技学术类直属社团</h3>
+                                                <hr class="sub-title"/>
+                                                <p> 校科协创新中心还有CG爱好者协会、ERP协会、安全技术协会、创业协会、漫漫邮子路、苹果爱好者俱乐部、嵌入式协会、华为花粉俱乐部、华夜工作室九个直属社团</p>
+                                            </div>
+                                        </div>
+                                    </li> 
+                                    </ul> 
                                 </div>
                             </div>
-
-
-
-
-                            </div>
-
-
-
-
-
-                <div class="ut-scroll-up-waypoint" data-section="section-about-brooklyn"></div>
+                        <div class="ut-scroll-up-waypoint" data-section="section-about-brooklyn"></div>
                 </section>
-                <section id="our-service" data-effect="fadeIn" data-width="centered" class="page-id-1936 entry-content parallax-background parallax-banner parallax-section  light   fixed" style="background-position: 50% 23px;">
+
+                <section id="our-service" data-effect="fadeIn" data-width="centered" class="page-id-1936 entry-content parallax-background parallax-banner parallax-section  light   fixed" style="background-position: 50% 23px;margin-top:125%;">
                 	<a class="ut-offset-anchor" data-parent="section-about-brooklyn" id="section-our-service"></a>
 
 
